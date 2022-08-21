@@ -4,7 +4,22 @@
 )]
 use tauri::api::path::config_dir;
 use std::{path::PathBuf, fs};
+use serde::{Serialize, Deserialize};
+use once_cell::sync::OnceCell;
+
+static obj: OnceCell<Vec<Detail>> = OnceCell::new();
+
+#[derive(Serialize,Deserialize,Debug)]
+pub struct Detail {
+  name: String,
+  list: Vec<String>,
+  url: String,
+}
+
 fn main() {
+  let test = read_json(get_dir());
+  let mut deserialized: Vec<Detail> = serde_json::from_str(&test).unwrap();
+  println!("{:?}", deserialized);
   tauri::Builder::default()
     .invoke_handler(tauri::generate_handler![
       get_json,
@@ -29,10 +44,14 @@ fn get_dir() -> PathBuf{
 }
 fn read_json(path: PathBuf) -> String{
   let data = fs::read_to_string(path);
-  match data {
+  let data = match data {
       Err(_) => String::from(r#"{}"#),
       Ok(d) => d
-  }
+  };
+  let deserialized: Vec<Detail> = serde_json::from_str(&data).unwrap();
+  obj.set(deserialized).unwrap();
+  println!("{:?}", obj);
+  data
 }
 
 #[tauri::command]
