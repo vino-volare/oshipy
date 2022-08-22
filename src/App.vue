@@ -2,64 +2,63 @@
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
 import CopyList from './components/CopyList.vue'
-import {onMounted, reactive, ref} from 'vue'
+import { onMounted, ref, reactive } from 'vue'
 import { invoke } from '@tauri-apps/api/tauri'
-const obj:{[key: string]: {[key: string]}} = reactive({})
+interface wrapper {
+  vector:detail[],
+  index:number
+}
+interface detail {
+  name:string,
+  url:string,
+  list:string[]
+}
+const obj = ref<detail[]>([])
 const test = ref('')
 
-//ファイルからjsonを取得
-const getJson = async () => {
-  const result = await invoke('get_json')as string;
-  test.value = result
-  const jsonObj = JSON.parse(test.value)
-  for(const i in jsonObj){
-    obj[i] = jsonObj[i]
-  }
+//バックエンドからデータを取得
+const readData = async () => {
+  const data:wrapper = await invoke('read_data')
+  obj.value = data['vector']
+  name.value = obj.value[data['index']]['name']
 }
-onMounted(getJson)
+
+onMounted(readData)
 
 //jsonを保存
-const saveJson =async () => {
-  const deserialized = JSON.stringify(obj)
-  await invoke('save_json', { data: deserialized})
-}
 
 //リストバッファ
 const newText = ref('')
 
 //リスト選択
 const name = ref('')
-const select = (key :string|number) => {
-  const l = key as string
-  name.value = l
+const select = async (i:number) => {
+  name.value = await obj.value[i]['name']
+  await invoke('selected_index', {index: i})
 }
 
-//オブジェクト削除
-const removeObj = () => {
-  if (name.value !== ''){
-    delete obj[name.value]
-    saveJson()
-  }
+//オブジェクト追加 削除
+const addObj =async () => {
+  await invoke('add_obj', {name: name.value})
+  readData()
+  newName.value = false
+}
+const removeObj = async () => {
+  await invoke('remove_obj')
+  readData()
 }
 
 
 //リスト編集
-const addList = () => {
-  if (name.value !== ''){
-    if (name.value in obj){
-      obj[name.value]['list'].push(newText.value)
-    } else {
-      obj[name.value] = {url: '', list: []}
-    }
-    saveJson()
-    newText.value = ''
-    newName.value = false
-  }
+const addList = async () => {
+  await invoke('add_list_text', {text: newText.value})
+  readData()
+  newText.value = ''
 }
-const removeList = (index: number, str: string) => {
-  name.value = str
-  obj[name.value]['list'].splice(index,1)
-  saveJson()
+const removeList = async (textIndex: number, index: number) => {
+  await select(index)
+  await invoke('remove_list_text', {index: textIndex})
+  readData()
 }
 
 //オブジェクト追加用フォーム
@@ -75,12 +74,13 @@ const openForm = () => {
 <p>selected: {{name}}</p>
 <div v-if="newName === false"><button @click="openForm">新規</button><button @click="removeObj">削除</button></div>
 <input v-else type="text" v-model="name" placeholder="new" />
-<button @click="addList">追加</button>
+<button v-if="newName === false" @click="addList">追加</button>
+<button v-else @click="addObj">追加</button>
 <input v-if="newName === false" type="text" v-model="newText" placeholder="text" />
 <ul>
-  <li v-for="(value, name) in obj">
-    <p @click="select(name)">{{name}}</p>
-    <CopyList v-bind:list="value['list']" v-bind:name="(name as string)" @removeList="removeList" />
+  <li v-for="(detail, i) in obj" v-bind:key="i">
+    <p @click="select(i)">{{detail["name"]}}</p>
+    <CopyList v-bind:list="detail['list']" v-bind:url="detail['url']" v-bind:index="i" @removeList="removeList" />
   </li>
 </ul>
 </template>

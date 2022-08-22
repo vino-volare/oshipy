@@ -6,16 +6,17 @@ import {ref, toRefs} from 'vue'
 
 const props = defineProps<{
   list: string[],
-  name: string
+  url: string,
+  index: number
 }>()
 
 const { list } = toRefs(props);
 
 const emit = defineEmits<{
-  (e: 'removeList', i: number, s: string): void
+  (e: 'removeList', textIndex: number, index: number): void
 }>()
 
-const clickRemove = (i: number) => emit('removeList', i, props.name)
+const clickRemove = (textIndex: number) => emit('removeList', textIndex, props.index)
 
 async function copy_text(index: number){
   await writeText(list.value[index])
