@@ -44,9 +44,11 @@ impl Vector {
         Wraper { vector: list, index: index }
     }
     pub fn delete_detail(&self){
-        let index = self.index.lock().unwrap().clone();
+        let mut index = self.index.lock().unwrap();
+        let i = index.clone();
         let mut list = self.vector.lock().unwrap();
-        list.remove(index);
+        list.remove(i);
+        *index = 0;
     }
 
     pub fn add_text(&self, str:String){
