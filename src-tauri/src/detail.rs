@@ -1,5 +1,5 @@
 use tauri::api::path::config_dir;
-use std::{path::PathBuf, fs};
+use std::{path::PathBuf, fs, io::Write};
 use serde::{Serialize, Deserialize};
 use std::sync::Mutex;
 
@@ -41,6 +41,21 @@ impl Vector {
     pub fn detail_list(&self) -> Wraper{
         let list = self.vector.lock().unwrap().clone();
         let index = self.index.lock().unwrap().clone();
+        let mut dir_path = config_dir().unwrap();
+        dir_path.push("Oshipy");
+        match fs::create_dir(dir_path) {
+            Ok(_)=>0,
+            Err(why)=>1,
+        };
+        let mut file = match fs::File::create(get_dir()) {
+            Err(why)=>panic!("couldn't create: {}", why),
+            Ok(file)=>file,
+        };
+        let serialized = serde_json::to_string(&list).unwrap();
+        match file.write_all(serialized.as_bytes()) {
+            Err(why)=>panic!("couldn't write: {}", why),
+            Ok(_)=>0,
+        };
         Wraper { vector: list, index: index }
     }
     pub fn delete_detail(&self){
@@ -122,7 +137,7 @@ fn get_dir() -> PathBuf{
 fn read_json() -> Vec<Detail>{
     let data = fs::read_to_string(get_dir());
     let data = match data {
-        Err(_) => String::from(r#"{}"#),
+        Err(_) => String::from(r#"[]"#),
         Ok(d) => d
     };
     let deserialized: Vec<Detail> = serde_json::from_str(&data).unwrap();
