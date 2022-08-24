@@ -25,11 +25,33 @@ async function copy_text(index: number){
 
 <template>
   <ul>
-    <li v-for="(text, i) in list" v-bind:key="i">
-    <span @click="copy_text(i)">{{text}}</span> <span @click="clickRemove(i)">x</span>
+    <li class="copy" v-for="(text, i) in list" v-bind:key="i">
+    <span class="text" @click="copy_text(i)">{{text}}</span> <span @click="clickRemove(i)">x</span>
     </li>
   </ul>
 </template>
 
 <style scoped>
+.copy {
+  display: flex;
+  justify-content: flex-start;
+}
+.copy:first-child {
+  border-top: 1px solid #666;
+  border-bottom: 1px solid #666;
+}
+.copy + .copy{
+  border-bottom: 1px solid #666;
+}
+.text {
+  flex-grow: 1;
+}
+.text:hover{
+  background-color: #1a1a1a;
+}
+@media (prefers-color-scheme: light) {
+  .text:hover{
+    background-color: #bebebe;
+  }
+}
 </style>

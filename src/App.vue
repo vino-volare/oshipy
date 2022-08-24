@@ -70,7 +70,7 @@ const openForm = () => {
 </script>
 
 <template>
-<p>推しぴ</p>
+<h1>推しぴー</h1>
 <p>selected: {{name}}</p>
 <div v-if="newName === false"><button @click="openForm">新規</button><button @click="removeObj">削除</button></div>
 <input v-else type="text" v-model="name" placeholder="new" />
@@ -79,7 +79,7 @@ const openForm = () => {
 <input v-if="newName === false" type="text" v-model="newText" placeholder="text" />
 <ul>
   <li v-for="(detail, i) in obj" v-bind:key="i">
-    <p @click="select(i)">{{detail["name"]}}</p>
+    <h2 @click="select(i)">{{detail["name"]}}</h2>
     <CopyList v-bind:list="detail['list']" v-bind:url="detail['url']" v-bind:index="i" @removeList="removeList" />
   </li>
 </ul>
@@ -87,15 +87,6 @@ const openForm = () => {
 
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
+
+
 </style>

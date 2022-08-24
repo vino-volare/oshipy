@@ -37,6 +37,7 @@ impl Vector {
         let mut list = self.vector.lock().unwrap();
         let new_detail = Self::new_detail(name);
         list.push(new_detail);
+        self.update_index(list.len() - 1)
     }
     pub fn detail_list(&self) -> Wraper{
         let list = self.vector.lock().unwrap().clone();
@@ -45,7 +46,7 @@ impl Vector {
         dir_path.push("Oshipy");
         match fs::create_dir(dir_path) {
             Ok(_)=>0,
-            Err(why)=>1,
+            Err(_)=>1,
         };
         let mut file = match fs::File::create(get_dir()) {
             Err(why)=>panic!("couldn't create: {}", why),
