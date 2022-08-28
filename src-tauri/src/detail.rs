@@ -6,7 +6,6 @@ use std::sync::Mutex;
 #[derive(Serialize,Deserialize,Debug,Clone)]
 pub struct Detail {
   name: String,
-  url: String,
   list: Vec<String>,
 }
 #[derive(Serialize,Deserialize,Debug,Clone)]
@@ -82,9 +81,8 @@ impl Vector {
     fn new_detail(str:String) -> Detail {
         let name = str;
         let list:Vec<String> = Vec::new();
-        let url = String::new();
 
-        Detail { name, url, list }
+        Detail { name: name, list: list }
     }
 }
 

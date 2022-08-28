@@ -10,7 +10,6 @@ interface wrapper {
 }
 interface detail {
   name:string,
-  url:string,
   list:string[]
 }
 const obj = ref<detail[]>([])
@@ -39,21 +38,32 @@ const select = async (i:number) => {
 
 //オブジェクト追加 削除
 const addObj =async () => {
-  await invoke('add_obj', {name: name.value})
-  readData()
-  newName.value = false
+  if (submitFlag.value == true) {
+    await invoke('add_obj', {name: name.value})
+    readData()
+    newName.value = false
+    submitFlag.value = false
+  }
 }
 const removeObj = async () => {
   await invoke('remove_obj')
   readData()
 }
 
+const backToDefault = ()=>{
+  readData()
+  newName.value = false
+}
+
 
 //リスト編集
 const addList = async () => {
-  await invoke('add_list_text', {text: newText.value})
-  readData()
-  newText.value = ''
+  if (submitFlag.value == true) {
+    await invoke('add_list_text', {text: newText.value})
+    readData()
+    newText.value = ''
+    submitFlag.value = false
+  }
 }
 const removeList = async (textIndex: number, index: number) => {
   await select(index)
@@ -67,26 +77,45 @@ const openForm = () => {
   newName.value = true
   name.value = ''
 }
+
+const submitFlag = ref(false)
+const enableSubmit = ()=>{
+  submitFlag.value = true
+}
 </script>
 
 <template>
-<h1>推しぴー</h1>
-<p>selected: {{name}}</p>
-<div v-if="newName === false"><button @click="openForm">新規</button><button @click="removeObj">削除</button></div>
-<input v-else type="text" v-model="name" placeholder="new" />
-<button v-if="newName === false" @click="addList">追加</button>
-<button v-else @click="addObj">追加</button>
-<input v-if="newName === false" type="text" v-model="newText" placeholder="text" />
-<ul>
-  <li v-for="(detail, i) in obj" v-bind:key="i">
+<div v-if="newName === false">
+  <button @click="openForm">新規</button>
+  <button @click="removeObj">削除</button>
+  <p>selected: {{name}}</p>
+</div>
+<div v-else>
+  <button @click="backToDefault">戻る</button>
+  <input type="text" v-model="name" @keypress.prevent.enter.exact="enableSubmit" @keyup.prevent.enter.exact="addObj" placeholder="new" />
+</div>
+<input v-if="newName === false" type="text" v-model="newText" @keypress.prevent.enter.exact="enableSubmit" @keyup.prevent.enter.exact="addList" placeholder="text" />
+<ul class="list">
+  <li class="content" v-for="(detail, i) in obj" v-bind:key="i">
     <h2 @click="select(i)">{{detail["name"]}}</h2>
-    <CopyList v-bind:list="detail['list']" v-bind:url="detail['url']" v-bind:index="i" @removeList="removeList" />
+    <CopyList v-bind:list="detail['list']" v-bind:index="i" @removeList="removeList" />
   </li>
 </ul>
 </template>
 
 
 <style scoped>
-
-
+.list {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  flex-wrap: wrap;
+}
+.content{
+  padding-left: 4rem;
+  padding-right: 4rem;
+  flex-grow: 1;
+  min-width: fit-content;
+  max-width: 50%;
+}
 </style>
